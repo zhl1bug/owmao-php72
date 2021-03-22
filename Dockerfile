@@ -56,6 +56,7 @@ Run php -r "copy('https://install.phpcomposer.com/installer', 'composer-setup.ph
     && mv composer.phar /usr/local/bin/composer \
     && composer config -g repo.packagist composer https://packagist.phpcomposer.com \
     && composer self-update --clean-backups \
+    && composer self-update --1 \
 # Install redis extension
     && wget http://pecl.php.net/get/redis-${PHPREDIS_VERSION}.tgz -O /tmp/redis.tar.tgz \
     && pecl install /tmp/redis.tar.tgz \
