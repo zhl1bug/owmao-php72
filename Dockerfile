@@ -96,11 +96,16 @@ Run php -r "copy('https://install.phpcomposer.com/installer', 'composer-setup.ph
     && chmod -R 777 /var/log
 # Clear dev deps
 RUN apt-get clean \
-    && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false
+    && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
 # Timezone
 #    && cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime \
 #    && echo "${TIMEZONE}" > /etc/timezone \
-#    && echo "[Date]\ndate.timezone=${TIMEZONE}" > /usr/local/etc/php/conf.d/timezone.ini
+#    && echo "[Date]\ndate.timezone=${TIMEZONE}" > /usr/local/etc/php/conf.d/timezone.ini 
+     && echo file_uploads = On >> /usr/local/etc/php/conf.d/uploads.ini \
+     && echo memory_limit = 2048 M >> /usr/local/etc/php/conf.d/uploads.ini \
+     && echo upload_max_filesize = 512 M >> /usr/local/etc/php/conf.d/uploads.ini \
+     && echo post_max_size = 512 M >> /usr/local/etc/php/conf.d/uploads.ini \
+     && echo max_execution_time = 7200 >> /usr/local/etc/php/conf.d/uploads.ini 
 
 # Install composer deps
 ADD . /var/www
