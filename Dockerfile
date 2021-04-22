@@ -102,9 +102,9 @@ RUN apt-get clean \
 #    && echo "${TIMEZONE}" > /etc/timezone \
 #    && echo "[Date]\ndate.timezone=${TIMEZONE}" > /usr/local/etc/php/conf.d/timezone.ini 
      && echo file_uploads = On >> /usr/local/etc/php/conf.d/uploads.ini \
-     && echo memory_limit = 2048 M >> /usr/local/etc/php/conf.d/uploads.ini \
-     && echo upload_max_filesize = 512 M >> /usr/local/etc/php/conf.d/uploads.ini \
-     && echo post_max_size = 512 M >> /usr/local/etc/php/conf.d/uploads.ini \
+     && echo memory_limit = 2048M >> /usr/local/etc/php/conf.d/uploads.ini \
+     && echo upload_max_filesize = 512M >> /usr/local/etc/php/conf.d/uploads.ini \
+     && echo post_max_size = 512M >> /usr/local/etc/php/conf.d/uploads.ini \
      && echo max_execution_time = 7200 >> /usr/local/etc/php/conf.d/uploads.ini 
 
 # Install composer deps
