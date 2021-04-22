@@ -46,7 +46,7 @@ RUN sed -i 's#http://deb.debian.org#https://mirrors.aliyun.com#g' /etc/apt/sourc
         libfreetype6-dev \
 # Install PHP extensions
     && docker-php-ext-install \
-       bcmath gd pdo_mysql mbstring sockets zip sysvmsg sysvsem sysvshm \
+       bcmath gd pdo_mysql mysqli mbstring sockets zip sysvmsg sysvsem sysvshm \
 # Clean apt cache
     && rm -rf /var/lib/apt/lists/*
 
