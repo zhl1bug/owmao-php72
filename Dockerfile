@@ -1,6 +1,6 @@
 FROM php:7.2-fpm
 
-LABEL maintainer="inhere <zhanghongli@haoxiaec.com>" version="2.0"
+LABEL maintainer="inhere <zhanghongli@1bug.com>" version="2.0"
 
 # --build-arg timezone=Asia/Shanghai
 ARG timezone
@@ -16,27 +16,14 @@ ENV APP_ENV=${app_env:-"test"} \
     SWOOLE_VERSION=4.4.18 \
     COMPOSER_ALLOW_SUPERUSER=1 \
     YACONF_VERSION=1.1.0 \
-    YAF_VERSION=3.2.5  
+    YAF_VERSION=3.2.5  \
+    XLSWRITER_VERSION=1.3.7
 
-# Libs -y --no-install-recommends
-#RUN 
-    #mv /etc/apt/sources.list /etc/apt/sources.list.bak \
-    #&& echo "deb http://mirrors.aliyun.com/ubuntu/ xenial main restricted universe multiverse" >> /etc/apt/sources.list \
-    #&& echo "deb http://mirrors.aliyun.com/ubuntu/ xenial-security main restricted universe multiverse" >> /etc/apt/sources.list \
-    #&& echo "deb http://mirrors.aliyun.com/ubuntu/ xenial-updates main restricted universe multiverse" >> /etc/apt/sources.list \
-    #&& echo "deb http://mirrors.aliyun.com/ubuntu/ xenial-proposed main restricted universe multiverse" >> /etc/apt/sources.list \
-    #&& echo "deb http://mirrors.aliyun.com/ubuntu/ xenial-backports main restricted universe multiverse" >> /etc/apt/sources.list \
-    #&& echo "deb-src http://mirrors.aliyun.com/ubuntu/ xenial main restricted universe multiverse" >> /etc/apt/sources.list \
-    #&& echo "deb-src http://mirrors.aliyun.com/ubuntu/ xenial-security main restricted universe multiverse" >> /etc/apt/sources.list \
-    #&& echo "deb-src http://mirrors.aliyun.com/ubuntu/ xenial-updates main restricted universe multiverse" >> /etc/apt/sources.list \
-    #&& echo "deb-src http://mirrors.aliyun.com/ubuntu/ xenial-proposed main restricted universe multiverse" >> /etc/apt/sources.list \
-    #&& echo "deb-src http://mirrors.aliyun.com/ubuntu/ xenial-backports main restricted universe multiverse" >> /etc/apt/sources.list \
 RUN sed -i 's#http://deb.debian.org#https://mirrors.aliyun.com#g' /etc/apt/sources.list \
     && apt autoremove -y \
     && apt-get update \
     && apt-get install -y \
-    && apt-get install -y curl \
-        curl wget git zip unzip less vim procps lsof tcpdump htop openssl net-tools iputils-ping \
+    && apt-get install -y curl wget git zip unzip less vim procps lsof tcpdump htop openssl net-tools iputils-ping \
         libz-dev \
         libssl-dev \
         libnghttp2-dev \
@@ -63,18 +50,19 @@ Run php -r "copy('https://install.phpcomposer.com/installer', 'composer-setup.ph
     && rm -rf /tmp/redis.tar.tgz \
     && docker-php-ext-enable redis \
 # Install swoole extension
-    && wget https://github.com/swoole/swoole-src/archive/v${SWOOLE_VERSION}.tar.gz -O swoole.tar.gz \
-    && mkdir -p swoole \
-    && tar -xf swoole.tar.gz -C swoole --strip-components=1 \
-    && rm swoole.tar.gz \
+    && wget http://pecl.php.net/get/swoole-${SWOOLE_VERSION}.tgz -O /tmp/swoole.tar.tgz \
+    #&& wget https://github.com/swoole/swoole-src/archive/v${SWOOLE_VERSION}.tar.gz -O swoole.tar.gz \
+    && mkdir -p /tmp/swoole \
+    && tar -zxvf /tmp/swoole.tar.tgz -C /tmp/swoole --strip-components=1 \
+    && rm /tmp/swoole.tar.tgz \
     && ( \
-        cd swoole \
+        cd /tmp/swoole \
         && phpize \
         && ./configure --enable-mysqlnd --enable-sockets --enable-openssl --enable-http2 \
         && make -j$(nproc) \
         && make install \
     ) \
-    && rm -r swoole \
+    && rm -r /tmp/swoole \
     && docker-php-ext-enable swoole \
 # Install yaconf extension
     && wget http://pecl.php.net/get/yaconf-${YACONF_VERSION}.tgz -O /tmp/yaconf.tar.tgz \
@@ -93,29 +81,35 @@ Run php -r "copy('https://install.phpcomposer.com/installer', 'composer-setup.ph
     && pecl install /tmp/seaslog.tar.tgz \
     && rm -rf /tmp/seaslog.tar.tgz \
     && docker-php-ext-enable seaslog \
-    && chmod -R 777 /var/log
+    && chmod -R 777 /var/log \
+# Install xlswriter extension
+    && wget http://pecl.php.net/get/xlswriter-${XLSWRITER_VERSION}.tgz -O /tmp/xlswriter.tar.tgz \
+    && mkdir -p /tmp/xlswriter \
+    && tar -zxvf /tmp/xlswriter.tar.tgz -C /tmp/xlswriter --strip-components=1 \
+    && rm /tmp/xlswriter.tar.tgz \
+    && ( \
+        cd /tmp/xlswriter \
+        && phpize \
+        && ./configure --enable-reader \
+        && make -j$(nproc) \
+        && make install \
+    ) \
+    && rm -r /tmp/xlswriter \
+    && docker-php-ext-enable xlswriter \
+# base.ini
+    && echo file_uploads = On >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo memory_limit = 2048M >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo upload_max_filesize = 512M >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo post_max_size = 512M >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo max_execution_time = 7200 >> /usr/local/etc/php/conf.d/uploads.ini   
 # Clear dev deps
 RUN apt-get clean \
-    && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
-# Timezone
-#    && cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime \
-#    && echo "${TIMEZONE}" > /etc/timezone \
-#    && echo "[Date]\ndate.timezone=${TIMEZONE}" > /usr/local/etc/php/conf.d/timezone.ini 
-     && echo file_uploads = On >> /usr/local/etc/php/conf.d/uploads.ini \
-     && echo memory_limit = 2048M >> /usr/local/etc/php/conf.d/uploads.ini \
-     && echo upload_max_filesize = 512M >> /usr/local/etc/php/conf.d/uploads.ini \
-     && echo post_max_size = 512M >> /usr/local/etc/php/conf.d/uploads.ini \
-     && echo max_execution_time = 7200 >> /usr/local/etc/php/conf.d/uploads.ini 
+    && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false
 
-# Install composer deps
 ADD . /var/www
-RUN  cd /var/www
-#    && composer install \
-#    && composer clearcache
 
 WORKDIR /var/www
 EXPOSE 9000
 
 # ENTRYPOINT ["php", "/var/www", "http:start"]
 #CMD ["php", "/var/www", "http:start"]
-
