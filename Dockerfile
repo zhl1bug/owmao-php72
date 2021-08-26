@@ -34,6 +34,10 @@ RUN sed -i 's#http://deb.debian.org#https://mirrors.aliyun.com#g' /etc/apt/sourc
 # Install PHP extensions
     && docker-php-ext-install \
        bcmath gd pdo_mysql mysqli mbstring sockets zip sysvmsg sysvsem sysvshm \
+# Install GD
+    && apt-get update && apt-get install libgd3 libgd-dev && rm -rf /var/lib/apt/lists/* \
+    && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
+    && docker-php-ext-install -j$(nproc) gd \
 # Clean apt cache
     && rm -rf /var/lib/apt/lists/*
 
