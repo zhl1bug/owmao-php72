@@ -19,7 +19,7 @@ ENV APP_ENV=${app_env:-"test"} \
     YAF_VERSION=3.2.5  \
     XLSWRITER_VERSION=1.3.7
 
-RUN sed -i 's#http://deb.debian.org#https://mirrors.aliyun.com#g' /etc/apt/sources.list \
+RUN sed -i 's#http://deb.debian.org#https://mirrors.163.com#g' /etc/apt/sources.list \
     && apt autoremove -y \
     && apt-get update \
     && apt-get install -y \
